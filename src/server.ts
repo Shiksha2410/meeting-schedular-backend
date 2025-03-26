@@ -19,23 +19,16 @@ connectDB();
 // Middleware
 
 const corsOptions = {
-  origin: (origin: string, callback: Function) => {
-    // Allow the frontend URL and localhost (for local dev)
-    const allowedOrigins = [
-      process.env.FRONTEND_URL,  // The production frontend URL (e.g., Vercel)
-      "http://localhost:5173",   // Local development URL (if using Vite)
-    ];
-
-    // If the origin is in the allowed origins list or it's a local request (no origin)
-    if (allowedOrigins.includes(origin) || !origin) {
-      callback(null, true);  // Allow the request
+  origin: (requestOrigin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!requestOrigin || requestOrigin === process.env.FRONTEND_URL) {
+      callback(null, true); // Allow requests from the frontend URL or undefined origins
     } else {
-      callback(new Error("Not allowed by CORS"), false);  // Deny the request
+      callback(new Error("Not allowed by CORS")); // Block other origins
     }
   },
-  methods: "GET,POST,PUT,DELETE",  // Allowed HTTP methods
-  allowedHeaders: "Content-Type, Authorization",  // Allowed headers
-  credentials: true,  // Allow cookies or credentials
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type,Authorization",
+  credentials: true,
 };
 
 // Apply CORS middleware
