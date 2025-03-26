@@ -17,12 +17,29 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173", // Use FRONTEND_URL from .envontend URL
-    credentials: true,
-  })
-);
+
+const corsOptions = {
+  origin: (origin: string, callback: Function) => {
+    // Allow the frontend URL and localhost (for local dev)
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,  // The production frontend URL (e.g., Vercel)
+      "http://localhost:5173",   // Local development URL (if using Vite)
+    ];
+
+    // If the origin is in the allowed origins list or it's a local request (no origin)
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);  // Allow the request
+    } else {
+      callback(new Error("Not allowed by CORS"), false);  // Deny the request
+    }
+  },
+  methods: "GET,POST,PUT,DELETE",  // Allowed HTTP methods
+  allowedHeaders: "Content-Type, Authorization",  // Allowed headers
+  credentials: true,  // Allow cookies or credentials
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
