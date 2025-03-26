@@ -20,8 +20,13 @@ connectDB();
 
 const corsOptions = {
   origin: (requestOrigin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    if (!requestOrigin || requestOrigin === process.env.FRONTEND_URL) {
-      callback(null, true); // Allow requests from the frontend URL or undefined origins
+    const allowedOrigins = [
+      process.env.FRONTEND_URL, // Allow the frontend URL from the environment variable
+      "https://meeting-schedular-frontend.onrender.com", // Explicitly allow the Render frontend domain
+    ];
+
+    if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
+      callback(null, true); // Allow requests from allowed origins or undefined origins
     } else {
       callback(new Error("Not allowed by CORS")); // Block other origins
     }
@@ -55,5 +60,5 @@ app.use((req: Request, res: Response) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5001; // Port configuration
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
